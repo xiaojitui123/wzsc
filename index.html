@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 新增 -->
+    <title>我的在线收藏夹</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            background: #1677ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #4096ff;
+        }
+
+        .categories {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .category {
+            padding: 8px 15px;
+            background: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 1px solid #eee;
+        }
+
+        .category.active {
+            background: #1677ff;
+            color: white;
+        }
+
+        .links-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+        /* 新增桌面端优化 */
+        @media (min-width: 769px) {
+            .links-container {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 40%));
+                justify-content: center;
+            }
+            .add-form {
+                max-width: 800px; /* 再次增大表单宽度 */
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* 添加阴影 */
+            }
+            .form-input {
+                width: 100%;
+                padding: 14px;
+                font-size: 15px;
+                border: 2px solid #e5e7eb; /* 调整边框粗细 */
+                transition: all 0.3s ease;
+                max-width: 600px; /* 新增最大宽度限制 */
+            }
+            /* 新增：使表单输入框与操作按钮同宽 */
+            .action-buttons {
+                max-width: 600px;
+                margin-left: 0;
+            }
+            .form-input:focus {
+                border-color: #1677ff;
+                box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.1);
+                outline: none;
+            }
+            .form-row {
+                margin-bottom: 25px;
+            }
+        }
+        .link-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: 0.3s;
+        }
+
+        .link-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .link-name {
+            color: #1677ff;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 18px;
+        }
+
+        .link-url {
+            color: #666;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        /* 新增手机适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 0 5px;
+                max-width: 100%; /* 新增：允许容器撑满屏幕 */
+            }
+            .header {
+                flex-direction: column;
+                gap: 8px; /* 缩小间距 */
+            }
+            .btn {
+                width: 100%;
+                padding: 12px;
+                font-size: 15px; /* 增大按钮文字 */
+            }
+            .search-box {
+                font-size: 15px; /* 增大输入文字 */
+                padding: 12px 15px; /* 增加左右内边距 */
+            }
+            /* 新增 iPhone 小屏优化 */
+            @media (max-width: 450px) {
+                .category {
+                    padding: 5px 10px;
+                    font-size: 13px;
+                }
+                .link-card {
+                    padding: 10px;
+                }
+                .link-name {
+                    font-size: 15px; /* 减小标题字号 */
+                    margin-bottom: 6px;
+                }
+                .link-url {
+                    font-size: 13px; /* 减小URL字号 */
+                }
+            }
+            gap: 8px;
+            }
+            .category {
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+            .links-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .link-card {
+                padding: 12px;
+            }
+            .link-name {
+                font-size: 16px;
+            }
+        }
+        .link-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .link-actions button {
+            padding: 5px 10px;
+            font-size: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .link-actions button.edit {
+            background: #28a745;
+            color: white;
+        }
+        .link-actions button.delete {
+            background: #dc3545;
+            color: white;
+        }
+        /* 新增浮动按钮样式 */
+        .float-menu {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        /* 桌面端隐藏浮动按钮 */
+        @media (min-width: 769px) {
+            .float-menu {
+                display: none;
+            }
+            .header .btn {
+                display: inline-block !important;
+            }
+        }
+        .float-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #1677ff;
+            color: white;
+            border: none;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+        }
+        .menu-items {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: none;
+            flex-direction: column;
+            min-width: 120px;
+        }
+        .menu-items button {
+            padding: 12px;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+        }
+        .menu-items button:hover {
+            background: #f5f5f5;
+        }
+        @media (max-width: 768px) {
+            /* 在手机端隐藏原有按钮 */
+            .header .btn:not(.float-btn) {
+                display: none;
+            }
+            .add-form {
+                background: white;
+                padding: 20px;
+                border-radius: 12px;
+                margin-bottom: 30px;
+                display: none;
+            }
+            .form-row {
+                margin-bottom: 15px;
+            }
+            .form-input {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <input type="text" class="search-box" placeholder="搜索收藏..." id="searchInput">
+            <!-- 新增操作按钮组 -->
+            <div class="action-buttons">
+                <button class="btn" onclick="toggleForm()">添加收藏</button>
+                <button class="btn" onclick="exportData()">导出数据</button>
+                <button class="btn" onclick="document.getElementById('importInput').click()">导入数据</button>
+            </div>
+        </div>
+        <!-- 新增浮动菜单 -->
+        <div class="float-menu">
+            <button class="float-btn" onclick="toggleMenu()">+</button>
+            <div class="menu-items" id="menuItems">
+                <button onclick="toggleForm()">添加收藏</button>
+                <button onclick="exportData()">导出数据</button>
+                <button onclick="document.getElementById('importInput').click()">导入数据</button>
+            </div>
+        </div>
+
+        <!-- 保留原有文件输入 -->
+        <input type="file" id="importInput" hidden accept=".json" onchange="importData(this)">
+
+        <div class="add-form" id="addForm">
+            <div class="form-row">
+                <input type="text" class="form-input" id="linkName" placeholder="网站名称">
+            </div>
+            <div class="form-row">
+                <input type="url" class="form-input" id="linkUrl" placeholder="网站URL">
+            </div>
+            <div class="form-row">
+                <input type="text" class="form-input" id="linkCategory" placeholder="分类名称">
+            </div>
+            <button class="btn" onclick="saveLink()">保存</button>
+        </div>
+
+        <div class="categories" id="categories"></div>
+        <div class="links-container" id="linksContainer"></div>
+    </div>
+
+    <script>
+        let links = JSON.parse(localStorage.getItem('links') || '[]');
+        let currentCategory = '全部';
+
+        function saveData() {
+            localStorage.setItem('links', JSON.stringify(links));
+        }
+
+        function toggleForm() {
+            document.getElementById('addForm').style.display = 
+                document.getElementById('addForm').style.display === 'none' ? 'block' : 'none';
+        }
+
+        function saveLink() {
+            const name = document.getElementById('linkName').value.trim();
+            let url = document.getElementById('linkUrl').value.trim();
+            const category = document.getElementById('linkCategory').value.trim() || '未分类';
+
+            // 自动添加前缀
+            if (url && !url.startsWith('http')) {
+                url = `http://${url}`;
+            }
+
+            if (name && url) {
+                links.push({ name, url, category });
+                saveData();
+                render();
+                toggleForm();
+                clearForm();
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('linkName').value = '';
+            document.getElementById('linkUrl').value = '';
+            document.getElementById('linkCategory').value = '';
+        }
+
+        function renderCategories() {
+            const categories = ['全部', ...new Set(links.map(link => link.category))];
+            const container = document.getElementById('categories');
+            
+            container.innerHTML = categories.map(cat => `
+                <div class="category ${cat === currentCategory ? 'active' : ''}" 
+                     onclick="setCategory('${cat}')">
+                    ${cat}
+                </div>
+            `).join('');
+        }
+
+        function renderLinks() {
+            const container = document.getElementById('linksContainer');
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filtered = links.filter(link => {
+                const matchCategory = currentCategory === '全部' || link.category === currentCategory;
+                const matchSearch = link.name.toLowerCase().includes(searchText) || 
+                                  link.url.toLowerCase().includes(searchText);
+                return matchCategory && matchSearch;
+            });
+
+            container.innerHTML = filtered.map((link, index) => `
+                <div class="link-card">
+                    <a href="${link.url}" target="_blank" class="link-name">${link.name}</a>
+                    <div class="link-url">${link.url}</div>
+                    <small style="color: ${link.category === '未分类' ? '#94a3b8' : '#f59e0b'}">分类：${link.category}</small>
+                    <div class="link-actions">
+                        <button class="edit" onclick="editLink(${index})">编辑</button>
+                        <button class="delete" onclick="deleteLink(${index})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setCategory(cat) {
+            currentCategory = cat;
+            render();
+        }
+
+        function editLink(index) {
+            const link = links[index];
+            document.getElementById('linkName').value = link.name;
+            document.getElementById('linkUrl').value = link.url;
+            document.getElementById('linkCategory').value = link.category;
+            toggleForm();
+            deleteLink(index);
+        }
+
+        function deleteLink(index) {
+            links.splice(index, 1);
+            saveData();
+            render();
+        }
+
+        function render() {
+            renderCategories();
+            renderLinks();
+        }
+
+        // 处理搜索框回车事件
+        document.getElementById('searchInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                const searchText = this.value.toLowerCase();
+                if (searchText === '百度') {
+                    window.open('https://www.baidu.com', '_blank');
+                } else if (searchText === 'ai') {  // 修改判断条件
+                    window.open('https://www.baidu.com/s?wd=ai', '_blank');  // 修改为通用ai搜索
+                } else {
+                    const matchedLink = links.find(link => 
+                        link.name.toLowerCase().includes(searchText) || 
+                        link.url.toLowerCase().includes(searchText)
+                    );
+
+                    if (matchedLink) {
+                        window.open(matchedLink.url, '_blank');
+                    } else {
+                        window.open(`https://www.baidu.com/s?wd=${searchText}`, '_blank');
+                    }
+                }
+                this.value = '';
+                currentCategory = '全部';  // 新增：重置分类
+                render();  // 新增：重新渲染
+            }
+        });
+
+        // 初始化
+        document.getElementById('searchInput').addEventListener('input', render);
+        render();
+    // 新增导出功能
+    function exportData() {
+        const dataStr = JSON.stringify(links);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `bookmarks_${new Date().toLocaleDateString()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    // 新增导入功能（原导入功能也需要实现）
+    function importData(input) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            try {
+                links = JSON.parse(e.target.result);
+                saveData();
+                render();
+                alert('导入成功！');
+            } catch (error) {
+                alert('文件格式错误，请导入有效的JSON文件');
+            }
+            input.value = ''; // 清空选择以便重复导入
+        };
+        
+        reader.readAsText(file);
+    }
+    // 新增菜单切换功能
+    function toggleMenu() {
+        const menu = document.getElementById('menuItems');
+        menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    }
+    // 点击外部关闭菜单
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.float-menu')) {
+            document.getElementById('menuItems').style.display = 'none';
+        }
+    });
+    </script>
+</body>
+</html>
